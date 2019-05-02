@@ -230,9 +230,9 @@ def p_expression_op(t):
 
 def p_expression_cmp(t):
     '''
-    CMP_expression : VALUE_expression EQ VALUE_expression
-               | VALUE_expression GT VALUE_expression
-               | VALUE_expression LT VALUE_expression
+    CMP_expression : OP_expression EQ OP_expression
+               | OP_expression GT OP_expression
+               | OP_expression LT OP_expression
     '''
     t[0] = (t[2], t[1], t[3])
 
