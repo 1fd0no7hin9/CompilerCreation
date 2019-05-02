@@ -59,7 +59,7 @@ t_CSTATE = r'\}'
 t_OLOOP = r'\['
 t_COLON = r':'
 t_CLOOP = r'\]'
-t_STR = r'[a-zA-Z0-9=,!: ]+'
+t_STR = r'[a-zA-Z0-9 ]+'
 
 def t_DEC_NUM(t):
     r'\d+'
