@@ -146,6 +146,7 @@ def p_expression_print(t):
     expression : PRINT_NUM VALUE_expression empty
                | PRINT_STR STR NL
                | PRINT_STR STR empty
+               | PRINT_STR empty NL
     '''
     if t[3] == None:
         t[0] = (t[1], t[2])
