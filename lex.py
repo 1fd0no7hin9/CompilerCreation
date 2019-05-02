@@ -59,7 +59,7 @@ t_CSTATE = r'\}'
 t_OLOOP = r'\['
 t_COLON = r':'
 t_CLOOP = r'\]'
-t_STR = r'[a-zA-Z0-9 ]+'
+t_STR = r'[a-zA-Z0-9=,!: ]+'
 
 def t_DEC_NUM(t):
     r'\d+'
@@ -182,7 +182,7 @@ def p_expression_else(t):
 
 def p_expression_OC(t):
     '''
-    OC_expression : OSTATE expression CSTATE
+    OC_expression : OSTATE statement CSTATE
     '''
     t[0] = ('{}', t[2])
 
