@@ -78,12 +78,13 @@ def t_newline(t):
 t_ignore  = ' \t'
 
 def t_error(t):
-    print("Illegal character '%s'" % t.value[0])
+    # print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 # -----------------------LEXER---------------------------
 lexer = lex.lex()
 
+# read data
 data = ''
 file_name = ''
 while file_name == '':
@@ -91,6 +92,13 @@ while file_name == '':
 f = open(file_name)
 data = f.read()
 print(data)
+f.close()
+
+# count lines
+f = open(file_name)
+num_lines = len(f.readlines())-1
+print(num_lines)
+f.close()
 
 # Give the lexer some input
 lexer.input(data) 
@@ -131,12 +139,25 @@ def p_expression_declare(t):
     '''
     t[0] = (t[1], t[2])
 
+def p_expression_declare_error(t):
+    '''
+    expression : DECLARE error
+    '''
+    print("Syntax error in declaration at line " + str(t.lineno(2)-num_lines) + ". Bad variable or array name!")
+
 def p_expression_assign(t):
     '''
     expression : VAR ASSIGN OP_expression
                 | ARRAY_expression ASSIGN OP_expression
     '''
     t[0] = (t[2], t[1], t[3])
+
+def p_expression_assign_error(t):
+    '''
+    expression : VAR error OP_expression
+                | ARRAY_expression error OP_expression
+    '''
+    print("Syntax error in assign at line " + str(t.lineno(2)-num_lines) + ". Not assign symbol!")
 
 def p_expression_print(t):
     '''
@@ -150,15 +171,29 @@ def p_expression_print(t):
     else :
         t[0] = (t[1], t[2], t[3])
 
+def p_expression_print_error(t):
+    '''
+    expression : PRINT_NUM error empty
+               | PRINT_STR error NL
+               | PRINT_STR error empty
+    '''
+    print("Syntax error in printing at line " + str(t.lineno(2)-num_lines) + ". Bad printing value expression!")
+
 def p_expression_condition(t):
     '''
     expression : IF_expression empty
-               | IF_expression ELSE_expression	   
+               | IF_expression ELSE_expression
     '''
     if t[2] == None:
         t[0] = t[1]
     else:
         t[0] = (t[1], t[2])
+
+def p_expression_condition_error(t):
+    '''
+    expression : error ELSE_expression
+    '''
+    print("Syntax error in if-condition at line " + str(t.lineno(1)-num_lines) + ". No if-condition expression!")
 
 def p_expression_loop(t):
     '''
@@ -172,11 +207,24 @@ def p_expression_if(t):
     '''	
     t[0] = (t[1], t[2], t[3])
 
+def p_expression_if_error(t):
+    '''
+    IF_expression : error CMP_expression OC_expression 
+    '''	
+    print("Syntax error in if-condition at line " + str(t.lineno(1)-num_lines) + ". Not if symbol!")
+
 def p_expression_else(t):
     '''
     ELSE_expression : ELSE OC_expression 
     '''	
     t[0] = (t[1], t[2])
+
+def p_expression_else_error(t):
+    '''
+    ELSE_expression : error OC_expression 
+    '''	
+    print("Syntax error in else-condition at line " + str(t.lineno(1)-num_lines) + ". Not else symbol!")
+
 
 def p_expression_OC(t):
     '''
@@ -190,6 +238,12 @@ def p_expression_loop_condition(t):
     LOOP_COND_expression : OLOOP LOOP_IN_expression CLOOP
     '''
     t[0] = ('[]', t[2])
+
+def p_expression_loop_condition_error(t):
+    '''
+    LOOP_COND_expression : OLOOP error CLOOP
+    '''
+    print("Syntax error in loop-condition at line " + str(t.lineno(2)-num_lines) + ". Bad loop condition expression!")
 
 def  p_expression_loop_in_condition(t):
     '''
@@ -226,6 +280,18 @@ def p_expression_op(t):
     else:
         t[0] = (t[2], t[1], t[3])
 
+def p_expression_op_error(t):
+    '''
+    OP_expression : OP_expression error OP_expression
+    '''
+    print("Syntax error in operation at line " + str(t.lineno(2)-num_lines) + ". Not operand symbol!")
+
+def p_expression_op_paren_error(t):
+    '''
+    OP_expression : OPAREN OP_expression empty
+    '''
+    print("Syntax error in operation at line " + str(t.lineno(1)-num_lines) + ". ')' is missing!")
+
 def p_expression_cmp(t):
     '''
     CMP_expression : OP_expression EQ OP_expression
@@ -234,6 +300,12 @@ def p_expression_cmp(t):
     '''
     t[0] = (t[2], t[1], t[3])
 
+def p_expression_cmp_error(t):
+    '''
+    CMP_expression : OP_expression error OP_expression
+    '''
+    print("Syntax error in if-condition at line " + str(t.lineno(2)-num_lines) + " . Not comparing symbol!")
+
 def p_expression_value(t):
     '''
     VALUE_expression : VAR
@@ -241,7 +313,6 @@ def p_expression_value(t):
                     | HEX_NUM
                     | ARRAY_expression
                     | NEG_NUM_expression
-
     '''
     t[0] = t[1]
 
@@ -264,8 +335,8 @@ def p_empty(t):
     '''
     t[0] = None
 
-def p_error(t):
-    print("Syntax error at '%s'" % t)
+def p_error(t):    
+    print("Syntax error:")
 
 parser = yacc.yacc()
 
