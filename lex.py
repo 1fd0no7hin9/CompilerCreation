@@ -224,7 +224,7 @@ def p_expression_op(t):
     '''
     if t[2] == None:
         t[0] = t[1]
-    elif t[1] == 'OPAREN' and t[3] == 'CPAREN':
+    elif t[1] == '(' and t[3] == ')':
         t[0] = ('()', t[2])
     else:
         t[0] = (t[2], t[1], t[3])
