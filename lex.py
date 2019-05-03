@@ -120,9 +120,9 @@ precedence = (
 def p_statement_expr(t):
     '''
     statement : expression statement
-                | empty
+                | expression empty
     '''
-    if t[1] == None:
+    if t[2] == None:
         t[0] = t[1]
     else:
         t[0] = (t[1], t[2])
@@ -204,13 +204,13 @@ def p_expression_loop_step(t):
     '''
     LOOP_STEP_expression : COLON VALUE_expression
     '''
-    t[0] = (':', t[2])
+    t[0] = t[2]
 
 def p_expression_loop_stop(t):
     '''
     LOOP_STOP_expression : COLON VALUE_expression
     '''
-    t[0] = (':', t[2])
+    t[0] = t[2]
 
 def p_expression_op(t):
     '''
