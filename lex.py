@@ -7,7 +7,6 @@ tokens = (
     'HEX_NUM',
     'VAR',
     'DECLARE',
-    'NEG_NUM', 
     'MUL_OP', 
     'DIV_OP', 
     'MOD_OP',
@@ -36,7 +35,6 @@ tokens = (
 #Regular expression rules
 t_VAR = r'[a-zA-Z][a-zA-Z0-9]*\$'
 t_DECLARE = r'&'
-t_NEG_NUM = r'-\d+'
 t_MUL_OP = r'\*'
 t_DIV_OP = r'/'
 t_MOD_OP = r'%'
@@ -113,8 +111,7 @@ while True:
 precedence = (
     ('left','PLUS_OP','MINUS_OP'),
     ('left','MUL_OP','DIV_OP', 'MOD_OP'),
-    ('left', 'OPAREN', 'CPAREN'),
-    ('left', 'NEG_NUM')
+    ('left', 'OPAREN', 'CPAREN')
     )
 
 def p_statement_expr(t):
@@ -243,7 +240,7 @@ def p_expression_value(t):
                     | DEC_NUM
                     | HEX_NUM
                     | ARRAY_expression
-                    | NEG_NUM
+                    | NEG_NUM_expression
 
     '''
     t[0] = t[1]
@@ -254,6 +251,12 @@ def p_expression_array(t):
                     | VAR ARRAY DEC_NUM 
     '''
     t[0] = (t[2], t[1], t[3])
+
+def p_expression_neg_num(t):
+    '''
+    NEG_NUM_expression : MINUS_OP DEC_NUM
+    '''
+    t[0] = -t[2]
 
 def p_empty(t):
     '''
