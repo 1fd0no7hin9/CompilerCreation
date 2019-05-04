@@ -161,21 +161,23 @@ def expression_(token):
 
 def manageToken(token):
     a=[]
-    sign_token = ['?','?>','[]','{}','@','<<','&','>>','#']
+    sign_token = ['@','<<','&','>>','#']
+    sign2D_token = ['?','[]']
     while(token):
-        try:
-#            print("token[0] ", token[0])
+        print("manage : ",token[1])
+        if(token[1][0] in sign_token):
             a.append(token[0])
-            token = token[1]
-            if(token[1]==None):
-                a.append(token[0])
-                break
-            elif(sign_token.index(token[0])):
-                a.append(token)
-                break
-        except Exception as e:
-            print('')
-            
+            a.append(token[1])
+
+            break
+        elif(token[1][0][0] in sign2D_token):
+            a.append(token[0])
+            a.append(token[1])
+
+            break
+        a.append(token[0])
+        token = token[1]
+        
     return tuple(a)
 
 def define_tokenType(token):
@@ -256,9 +258,9 @@ def define_var(token):
     else:
         return str(token)
 
-f= open("text.txt","a")
+#f= open("text.txt","a")
 
-test_token = input("insert token : ")
+#test_token = input("insert token : ")
 #array_(test_token)
 
 #token = ('+', 3, ('*', ('()', ('+', 1, 1)), 2))
@@ -273,7 +275,16 @@ test_token = input("insert token : ")
 #    print(i)
 
 #main:
-for token in manageToken(test_token):
-    #print(token)
-    define_tokenType(token)
-f.close()
+#for token in manageToken(test_token):
+#    #print(token)
+#    define_tokenType(token)
+#f.close()
+
+import lex as a
+token = a.main()
+print(token)
+print()
+
+test_token = manageToken(token)
+for i in test_token:
+    print(i)
