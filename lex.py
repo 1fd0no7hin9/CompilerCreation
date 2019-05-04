@@ -81,40 +81,10 @@ def t_error(t):
     # print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
-# -----------------------LEXER---------------------------
-lexer = lex.lex()
-
-# read data
-data = ''
-file_name = ''
-while file_name == '':
-    file_name = input('Insert file name: ')
-f = open(file_name)
-data = f.read()
-print(data)
-f.close()
-
-# count lines
-f = open(file_name)
-num_lines = len(f.readlines())-1
-print(num_lines)
-f.close()
-
-# Give the lexer some input
-lexer.input(data) 
-tokens_list = []
-
-# Tokenize
-while True:
-	tok = lexer.token()
-	if not tok:
-		break      # No more input
-	tokens_list.append(tok.value)
-# print(tokens_list)
-# -------------------------------------------------------
-
 #Parsing Part
-
+global error_occur
+error_occur = False
+num_lines = 0
 # adding new thing here
 precedence = (
     ('left','PLUS_OP','MINUS_OP'),
@@ -181,19 +151,15 @@ def p_expression_print_error(t):
 
 def p_expression_condition(t):
     '''
-    expression : IF_expression empty
-               | IF_expression ELSE_expression
+    expression : IF_expression ELSE_expression
+                | IF_expression empty
     '''
     if t[2] == None:
-        t[0] = t[1]
+        print("Syntax error in if-condition. No else-condition expression!")
+        global error_occur 
+        error_occur = True
     else:
         t[0] = (t[1], t[2])
-
-def p_expression_condition_error(t):
-    '''
-    expression : error ELSE_expression
-    '''
-    print("Syntax error in if-condition at line " + str(t.lineno(1)-num_lines) + ". No if-condition expression!")
 
 def p_expression_loop(t):
     '''
@@ -337,7 +303,46 @@ def p_empty(t):
 
 def p_error(t):    
     print("Syntax error:")
+    global error_occur 
+    error_occur = True
 
-parser = yacc.yacc()
+def main():
+    lexer = lex.lex()
 
-print(parser.parse(data))
+    # read data
+    data = ''
+    file_name = ''
+    while file_name == '':
+        file_name = input('Insert file name: ')
+    f = open(file_name)
+    data = f.read()
+    # print(data)
+    f.close()
+
+    # count lines
+    f = open(file_name)
+    global num_lines
+    num_lines = len(f.readlines())-1
+    # print(num_lines)
+    f.close()
+
+    # Give the lexer some input
+    lexer.input(data) 
+    tokens_list = []
+
+    # Tokenize
+    while True:
+        tok = lexer.token()
+        if not tok:
+            break      # No more input
+        tokens_list.append(tok.value)
+    # print(tokens_list)
+
+    parser = yacc.yacc()
+    result = parser.parse(data)
+    global error_occur
+    if error_occur == True:
+        print("Can not generate AST because of error")
+        return None
+    else:
+        return result
