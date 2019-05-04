@@ -54,11 +54,15 @@ def manageToken(token):
 
     return tuple(a)
 
-a= input("insert token : ")
-
-f = open("test.txt","a")
-
-token = manageToken(a)
-print("equation ", token[1][2])
-expression_(token[1][2])
-f.close()
+import lex as compiler
+result = compiler.main()
+if result == None:
+    # a= input("insert token : ")
+    print("Can not generate assembly code because of error")
+else:
+    a = result
+    f = open("test.txt","a")
+    token = manageToken(a)
+    print("equation ", token[1][2])
+    expression_(token[1][2])
+    f.close()
