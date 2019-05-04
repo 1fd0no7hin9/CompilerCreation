@@ -181,19 +181,13 @@ def p_expression_print_error(t):
 
 def p_expression_condition(t):
     '''
-    expression : IF_expression empty
-               | IF_expression ELSE_expression
+    expression : IF_expression ELSE_expression
+                | IF_expression empty
     '''
     if t[2] == None:
-        t[0] = t[1]
+        print("Syntax error in if-condition. No else-condition expression!")
     else:
         t[0] = (t[1], t[2])
-
-def p_expression_condition_error(t):
-    '''
-    expression : error ELSE_expression
-    '''
-    print("Syntax error in if-condition at line " + str(t.lineno(1)-num_lines) + ". No if-condition expression!")
 
 def p_expression_loop(t):
     '''
