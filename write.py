@@ -16,7 +16,7 @@
 #   endif_1
 
 #have to use _if1_ as var in asm
-#have to use _if1_ as var in asm
+#have to use _if2_ as var in asm
 
 if_count = 0
 else_count = 0
@@ -53,7 +53,7 @@ def else_(statement_token):
     define_tokenType(statement_token)
 
     #------------------------
-    f.write("endif_%d\n" %(if_count - else_count + 1)) 
+    f.write("endif_%d:\n" %(if_count - else_count + 1)) 
 
 #found []
 #
@@ -125,18 +125,18 @@ def loop_(begin, stop, step, statement_token):
 def expression_(token):
     a = {'+':'add', '-':'sub', '*':'mul', '/':'div', '%':'div'}
     sign = ['()', '+', '-', '*', '/', '%']
-    
+    print("expression  come !") 
     try:
         sign.index(token[0])
         if(len(token) == 3):
             print("def")
             print(token)
             ax = expression_(token[1])
-            f.write("mov ax, %s\n"%(str(ax)))
+            f.write("mov ax, %s\n"%(define_var(ax)))
             f.write("push ax\n")
             
             bx = expression_(token[2])
-            f.write("mov bx, %s\n"%str(bx))
+            f.write("mov bx, %s\n"%(define_var(bx)))
             f.write("pop ax\n")
             if(token[0] == '+' or token[0] == '-'):
                 f.write("%s ax, bx\n"%(a[token[0]]))
@@ -147,7 +147,7 @@ def expression_(token):
         elif(len(token) == 2):
             print("efg")
             ax = expression_(token[1])
-            f.write("mov ax, %s\n"%(str(ax)))
+            f.write("mov ax, %s\n"%(define_var(ax)))
             #f.write("push ax\n")
         if(token[0] == '%'):
             return 'dx'
@@ -180,39 +180,87 @@ def manageToken(token):
 
 def define_tokenType(token):
     #to define token's type(if_else, loop, display, assign)
-    
-    if(token[0] == '?'):
-        print("token if")
-        sign = token[0]
-        condition_if = token[1]
-        statement_if = token[2]
-        expression_(condition_if[1])
-        if_(sign, statement_if)
-        return
-    elif(token[0] == '?>'):
-        print("token else")
-        statement_else = token[1]
-        else_(statement_else)
-        return
-    elif(token[0] == '<<'):
-        print("assign")
+    print(token)
+    if(token[0][0] == '?'):
+        print("token if_else")
         
+        condition_if = token[0][1]
+        sign = condition_if[0][0]
+        statement_if = token[0][2][1] 
+        
+        if(type(condition_if[1]).__name__ == 'tuple' and condition_if[1][0] != '#'):
+            print("condition[1] ",condition_if[1])
+            expression_(condition_if[1])
+            f.write("mov _if1_, ax\n")
+        else:
+            f.write("mov ax, %s\n"%(define_var(condition_if[1])))
+            f.write("mov _if1_, ax\n")
+
+        if(type(condition_if[2]).__name__ == 'tuple' and condition_if[2][0] != '#'):
+            expression_(condition_if[2])
+            f.write("mov _if2_, ax\n")
+        else:
+            f.write("mov ax, %s\n"%(define_var(condition_if[2])))
+            f.write("mov _if2_, ax\n")
+        
+        if_(sign, statement_if)
+        
+        print("token else")
+        statement_else = token[1][1][1]
+        else_(statement_else)
+
         return
+    
     elif(token[0][0] == '[]'):
-        #print("loop")
-        #condition = token[0][1]
-        #statement = token[1][1]
-        #loop_(condition[0], condition[1], condition[2], statement)
+        print("loop")
+        condition = token[0][1]
+        statement = token[1][1]
+        loop_(define_var(condition[0]), define_var(condition[1]), define_var(condition[2]), statement)
+        return
+    
+    elif(token[0] == '<<'):
+        # ('<<', var, var)
+        print("assign") 
+        var_1 = define_var(token[1])
+        var_2 = define_var(token[2])
+        f.write("mov %s, %s\n"%(var_1, var_2))
+        return
+    
+    elif(token[0] == '@'):
+        print("print  number")
+        return
+    
+    elif(token[0] == '>>'):
+        print("print str")
+        return
+    
+    elif(token[0] == '&'):
+        print("declare var")
         return
     else:
         print("anything else")
         
         return
 
+def define_var(token):
+    #('#', 'array$', 'index$')
+    #'var'
+    a=''
+    if(type(token).__name__ == 'tuple' and token[0] == '#'):
+        f.write('mov di, %s\n'%(token[2]))
+        a='['+str(token[1])+' + di'+']'
+        return a
+    elif(type(token).__name__ == 'tuple'):
+        expression_(token)
+        return 'ax'
+    else:
+        return str(token)
 
 f= open("text.txt","a")
 
 test_token = input("insert token : ")
+#array_(test_token)
+
 #token = ('+', 3, ('*', ('()', ('+', 1, 1)), 2))
 #token = ('+', ('+', 3, 1), ('*', 1, 2))
 #token = ('+', ('+', 3, 1), ('()', ('*', 1, 2)))
@@ -226,6 +274,6 @@ test_token = input("insert token : ")
 
 #main:
 for token in manageToken(test_token):
-    print(token)
+    #print(token)
     define_tokenType(token)
-#f.close()
+f.close()
